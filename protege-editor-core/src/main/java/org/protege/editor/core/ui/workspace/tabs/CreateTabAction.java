@@ -26,12 +26,21 @@ public class CreateTabAction extends ProtegeAction {
 	
 	public static WorkspaceTab handleCreateNewTab(TabbedWorkspace workspace) {
         final String name = JOptionPane.showInputDialog(workspace, "Please enter a name for the new tab");
-        if (name != null) {
-        CustomWorkspaceTabsManager customTabsManager = workspace.getCustomTabsManager();
-        WorkspaceTab tab = workspace.addTabForPlugin(customTabsManager.getPluginForTabName(name, workspace));
-        workspace.setSelectedTab(tab);
-        return tab;
-        }
-        return null;
+		return createNewTab(workspace, name);
+	}
+
+	public static WorkspaceTab handleCreateNewTab(TabbedWorkspace workspace, String defaultValue) {
+		final String name = JOptionPane.showInputDialog(workspace, "Please enter a name for the new tab", defaultValue);
+		return createNewTab(workspace, name);
+	}
+
+	private static WorkspaceTab createNewTab(TabbedWorkspace workspace, String name){
+		if(name == null){
+			return null;
+		}
+		CustomWorkspaceTabsManager customTabsManager = workspace.getCustomTabsManager();
+		WorkspaceTab tab = workspace.addTabForPlugin(customTabsManager.getPluginForTabName(name, workspace));
+		workspace.setSelectedTab(tab);
+		return tab;
 	}
 }

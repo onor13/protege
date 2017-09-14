@@ -7,6 +7,7 @@ import org.protege.editor.core.ui.workspace.WorkspaceViewsTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -31,11 +32,24 @@ public class ExportTabAction extends ProtegeAction {
 	public void dispose() throws Exception {
 	}
 
+	private static final String postFix=".layout.xml";
+	private static String tabNameToFileName(@Nonnull String tabName){
+        return tabName.replace(' ', '_') + postFix;
+	}
+
+	public static String fileNameToTabName(@Nonnull String fileName){
+		String tabName= fileName.replace('_', ' ');
+		if(tabName.endsWith(postFix)){
+			tabName = tabName.substring(0, tabName.length() - postFix.length());
+		}
+		return tabName;
+	}
+
 	public void actionPerformed(ActionEvent event) {
 		TabbedWorkspace workspace = (TabbedWorkspace) getWorkspace();
 		Set<String> extensions = new HashSet<>();
 		extensions.add("xml");
-		String fileName = workspace.getSelectedTab().getLabel().replace(' ', '_') + ".layout.xml";
+		String fileName = tabNameToFileName(workspace.getSelectedTab().getLabel());
 		File f = UIUtil.saveFile((Window) SwingUtilities.getAncestorOfClass(Window.class, workspace),
 				"Save layout to",
 				"XML Layout",

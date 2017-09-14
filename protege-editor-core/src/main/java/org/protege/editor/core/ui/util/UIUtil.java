@@ -8,15 +8,13 @@ import org.protege.editor.core.platform.apple.MacUIUtil;
 import org.protege.editor.core.prefs.Preferences;
 import org.protege.editor.core.prefs.PreferencesManager;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -104,6 +102,56 @@ public class UIUtil {
         }
         else {
             return null;
+        }
+    }
+
+    private static FileFilter getFileFilter(final String description, final Set<String> extensions){
+        return new FileFilter() {
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+
+            @Override
+            public boolean accept(File f) {
+                if (extensions.isEmpty() || f.isDirectory()) {
+                    return true;
+                }
+                else {
+                    String name = f.getName();
+                    for (String ext : extensions) {
+                        if (name.toLowerCase().endsWith(ext.toLowerCase())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+        };
+    }
+
+    @Nonnull
+    public static Collection<File> openFiles(Component parent, String title, final String description, final Set<String> extensions) {
+        if (OSUtils.isOSX() && parent instanceof Window) {
+            return Arrays.asList(MacUIUtil.openFile((Window) parent, title, extensions));
+        }
+        JFileChooser fileDialog = new JFileChooser(getCurrentFileDirectory());
+        fileDialog.setMultiSelectionEnabled(true);
+        if (extensions != null && !extensions.isEmpty()) {
+            fileDialog.setFileFilter(getFileFilter(description, extensions));
+        }
+        fileDialog.setDialogType(JFileChooser.OPEN_DIALOG);
+        int retVal = fileDialog.showOpenDialog(parent);
+        File[] files;
+        if (retVal == JFileChooser.APPROVE_OPTION && (files = fileDialog.getSelectedFiles()) != null && files.length > 0) {
+            if (files[0].getParent() != null) {
+                setCurrentFileDirectory(files[0].getParent());
+            }
+            return Arrays.asList(files);
+        }
+        else {
+            return new ArrayList<>();
         }
     }
 

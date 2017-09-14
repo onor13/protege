@@ -180,19 +180,34 @@
         <class value="org.protege.editor.core.ui.workspace.tabs.DeleteCustomTabsAction"/>
         <editorKitId value="any"/>
     </extension>
+
+    <extension id="menu.window.export"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+        <name value="Export"/>
+        <path value="org.protege.editor.core.application.menu.window/SlotB-F"/>
+        <editorKitId value="any"/>
+    </extension>
     
         
-    <extension id="menu.window.exportTab" 
+    <extension id="menu.window.export.exportTab"
                point="org.protege.editor.core.application.EditorKitMenuAction">
-        <name value="Export current tab..."/>
-        <path value="org.protege.editor.core.application.menu.window/SlotB-F"/>
+        <name value="Export current tab"/>
+        <path value="org.protege.editor.core.application.menu.window.export/SlotBF-A"/>
         <class value="org.protege.editor.core.ui.workspace.tabs.ExportTabAction"/>
+        <editorKitId value="any"/>
+    </extension>
+
+    <extension id="menu.window.export.exportAllTabs"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+        <name value="Export all tabs"/>
+        <path value="org.protege.editor.core.application.menu.window.export/SlotBF-B"/>
+        <class value="org.protege.editor.core.ui.workspace.tabs.ExportAllTabsAction"/>
         <editorKitId value="any"/>
     </extension>
     
     <extension id="menu.window.importTab" 
                point="org.protege.editor.core.application.EditorKitMenuAction">
-        <name value="Import tab..."/>
+        <name value="Import tab(s)"/>
         <path value="org.protege.editor.core.application.menu.window/SlotB-F"/>
         <class value="org.protege.editor.core.ui.workspace.tabs.ImportTabAction"/>
         <editorKitId value="any"/>

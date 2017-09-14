@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,36 +37,37 @@ public class ImportTabAction extends ProtegeAction {
 		TabbedWorkspace workspace = (TabbedWorkspace) getWorkspace();
         Set<String> extensions = new HashSet<>();
         extensions.add("xml");
-        File f = UIUtil.openFile((JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, workspace),
-                "Open layout from",
-                "XML Layout File",
+        Collection<File> files =  UIUtil.openFiles(SwingUtilities.getAncestorOfClass(JFrame.class, workspace),
+                "Open layout(s) from",
+                "XML Layout File(s)",
                 extensions);
-        if (f == null) {
-            return;
+
+        for(File f : files){
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                    sb.append("\n");
+                }
+                WorkspaceViewsTab tab = (WorkspaceViewsTab) CreateTabAction.handleCreateNewTab(workspace,
+                        ExportTabAction.fileNameToTabName(f.getName()));
+                if (tab != null) {
+                    tab.reset(sb.toString());
+                }
+
+            }
+            catch (IOException e) {
+                logger.error("An error occurred when attempting to import a tab configuration.  File: {}, Details: {}",
+                        f.getAbsolutePath(), e);
+                JOptionPane.showMessageDialog(workspace,
+                        "There was a problem saving the layout",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(f));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-                sb.append("\n");
-            }
-            WorkspaceViewsTab tab = (WorkspaceViewsTab) CreateTabAction.handleCreateNewTab(workspace);
-            if (tab == null) {
-                return;
-            }
-            tab.reset(sb.toString());
-        }
-        catch (IOException e) {
-            logger.error("An error occurred when attempting to import a tab configuration.  File: {}, Details: {}",
-                    f.getAbsolutePath(), e);
-            JOptionPane.showMessageDialog(workspace,
-                    "There was a problem saving the layout",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
 	}
 
 }
