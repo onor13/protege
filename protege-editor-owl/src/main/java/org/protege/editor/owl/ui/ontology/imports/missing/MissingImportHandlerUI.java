@@ -48,56 +48,44 @@ public class MissingImportHandlerUI implements MissingImportHandler {
 
     public IRI getDocumentIRI(IRI ontologyIRI) {
         IRI fromCache = cache.get(ontologyIRI);
-        if(fromCache !=null){
+        if (fromCache != null) {
             return fromCache;
         }
-        FutureTask<IRI> futureTask = new FutureTask<>(() -> {
-            int ret = JOptionPane.showConfirmDialog(null,
-                    "<html><body>The system couldn't locate the ontology:<br><font color=\"blue\">" + ontologyIRI.toString() + "</font><br><br>" +
 
-                            "Would you like to attempt to resolve the missing import?</body></html>",
-                    "Resolve missing import?",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-            if (ret != JOptionPane.YES_OPTION) {
-                return null;
-            }
-            UIHelper helper = new UIHelper(owlEditorKit);
-            File file = helper.chooseOWLOrCatalogFile("Please select an ontology or a catalog file");
-            if (file == null) {
-                return ontologyIRI;
-            }
-            boolean isFileCatalog = true;
-            XMLCatalogManager xmlCatalogManager=null;
-            try{
-                XMLCatalog catalog = CatalogUtilities.parseDocument(file.toURI().toURL());
-                xmlCatalogManager = new XMLCatalogManager(catalog);
-            }
-            catch (Exception e){
-                ;//Not a catalog, probably an ontology
-                isFileCatalog = false;
-                updateActiveCatalog(ontologyIRI, file, isFileCatalog);
-                return IRI.create(file);
-            }
+        int ret = JOptionPane.showConfirmDialog(null,
+                "<html><body>The system couldn't locate the ontology:<br><font color=\"blue\">" + ontologyIRI.toString() + "</font><br><br>" +
 
-            updateActiveCatalog(ontologyIRI, file, isFileCatalog);
-            xmlCatalogManager.getAllUriEntries().forEach(entry -> cache.put(entry.getOntologyIRI(), IRI.create(entry.getPhysicalLocation())));
-            IRI result =cache.get(ontologyIRI);
-            return result == null ? ontologyIRI: result;
-        });
-
-        SwingUtilities.invokeLater(futureTask);
-        try {
-            return futureTask.get();
-        } catch (InterruptedException e) {
-            logger.debug("Resolve import task interrupted");
-            return null;
-        } catch (ExecutionException e) {
-            logger.error("An exception was thrown whilst the user was resolving a missing import: {}", e.getCause().getMessage());
+                        "Would you like to attempt to resolve the missing import?</body></html>",
+                "Resolve missing import?",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (ret != JOptionPane.YES_OPTION) {
             return null;
         }
+        UIHelper helper = new UIHelper(owlEditorKit);
+        File file = helper.chooseOWLOrCatalogFile("Please select an ontology or a catalog file");
+        if (file == null) {
+            return ontologyIRI;
+        }
+        boolean isFileCatalog = true;
+        XMLCatalogManager xmlCatalogManager = null;
+        try {
+            XMLCatalog catalog = CatalogUtilities.parseDocument(file.toURI().toURL());
+            xmlCatalogManager = new XMLCatalogManager(catalog);
+        } catch (Exception e) {
+            ;//Not a catalog, probably an ontology
+            isFileCatalog = false;
+            updateActiveCatalog(ontologyIRI, file, isFileCatalog);
+            return IRI.create(file);
+        }
+
+        updateActiveCatalog(ontologyIRI, file, isFileCatalog);
+        xmlCatalogManager.getAllUriEntries().forEach(entry -> cache.put(entry.getOntologyIRI(), IRI.create(entry.getPhysicalLocation())));
+        IRI result = cache.get(ontologyIRI);
+        return result == null ? ontologyIRI : result;
+
     }
-    
+
     private void updateActiveCatalog(IRI ontologyIRI, File file, boolean isFileCatalog) {
         OntologyCatalogManager catalogManager = owlEditorKit.getOWLModelManager().getOntologyCatalogManager();
         XMLCatalog activeCatalog = catalogManager.getActiveCatalog();
@@ -105,18 +93,16 @@ public class MissingImportHandlerUI implements MissingImportHandler {
             return;
         }
         URI relativeFile = CatalogUtilities.relativize(file.toURI(), activeCatalog);
-        if(isFileCatalog){
+        if (isFileCatalog) {
             activeCatalog.addEntry(0, new NextCatalogEntry("User Entered Import Resolution", activeCatalog, relativeFile, null));
-        }
-        else{
+        } else {
             activeCatalog.addEntry(0, new UriEntry("User Entered Import Resolution", activeCatalog, ontologyIRI.toString(), relativeFile, null));
         }
 
         File catalogLocation = new File(activeCatalog.getXmlBaseContext().getXmlBase());
         try {
             CatalogUtilities.save(activeCatalog, catalogLocation);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Could not save user supplied import redirection to catalog.", e);
         }
     }
