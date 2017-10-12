@@ -76,20 +76,18 @@ public class AddImportsStrategy {
 
     private List<OWLOntologyChange> loadImportsInternal() {
         OntologyCatalogManager catalogManager = editorKit.getOWLModelManager().getOntologyCatalogManager();
-        XMLCatalogManager xmlCatalogManager = null;
         OWLOntology ontology = editorKit.getModelManager().getActiveOntology();
         IRI importersDocumentLocation = ontology.getOWLOntologyManager().getOntologyDocumentIRI(ontology);
         File f = null;
-        XMLCatalog catalog = null;
         boolean isLocalFile=false;
-        if (UIUtil.isLocalFile(importersDocumentLocation.toURI())) {
+        if (UIUtil.isLocalFile(importersDocumentLocation.toURI()) && importInfo.size() > 0) {
             f = new File(importersDocumentLocation.toURI());
-            catalog = editorKit.getModelManager().addRootFolder(f.getParentFile());
-            xmlCatalogManager = new XMLCatalogManager(catalogManager.getActiveCatalog());
+            editorKit.getModelManager().addRootFolder(f.getParentFile());
             isLocalFile = true;
         }
 
         List<OWLOntologyChange> changes = new ArrayList<>();
+
         for (ImportInfo importParameters : importInfo) {
             logger.info(LogBanner.start("Importing ontology and imports closure"));
             logger.info("Processing {}", importParameters.getImportsDeclarationIRI());
@@ -97,15 +95,7 @@ public class AddImportsStrategy {
             IRI importedOntologyDocumentIRI = importParameters.getImportsDeclarationIRI();
 
             if(isLocalFile){
-                URI physicalLocationURI = CatalogUtilities.relativize(importParameters.getPhysicalLocation(), catalog);
-                if(!xmlCatalogManager.containsUri(physicalLocationURI)){
-                    catalog.addEntry(0, new UriEntry("Imports Wizard Entry", catalog, importedOntologyDocumentIRI.toURI().toString(), physicalLocationURI, null));
-                }
-                try {
-                    CatalogUtilities.save(catalog, OntologyCatalogManager.getCatalogFile(f.getParentFile()));
-                } catch (IOException e) {
-                    logger.warn("An error occurred whilst saving the catalog file: {}", e);
-                }
+                catalogManager.updateActiveCatalog(importParameters, f.getParentFile(), importedOntologyDocumentIRI.toURI());
             }
 
             OWLOntologyManager man = editorKit.getOWLModelManager().getOWLOntologyManager();

@@ -7,6 +7,7 @@ import org.protege.editor.core.ui.preferences.PreferencesLayoutPanel;
 import org.protege.editor.core.ui.view.View;
 import org.protege.editor.owl.model.axiom.FreshAxiomLocation;
 import org.protege.editor.owl.model.axiom.FreshAxiomLocationPreferences;
+import org.protege.editor.owl.model.library.XmlCatalogPreferences;
 import org.protege.editor.owl.model.search.SearchManagePluginListCellRenderer;
 import org.protege.editor.owl.model.search.SearchManagerPlugin;
 import org.protege.editor.owl.model.search.SearchManagerSelector;
@@ -43,6 +44,9 @@ public class GeneralPreferencesPanel extends OWLPreferencesPanel {
 
     private JRadioButton addFreshAxiomsToSubjectDefiningOntology;
 
+    private JRadioButton useDefaultCatalog;
+    private JRadioButton alwaysAskForCustomCatalog;
+
 
     private JCheckBox autoExpandEnabledCheckBox;
 
@@ -71,6 +75,14 @@ public class GeneralPreferencesPanel extends OWLPreferencesPanel {
         }
         else if (addFreshAxiomsToSubjectDefiningOntology.isSelected()) {
             axiomPrefs.setFreshAxiomLocation(FreshAxiomLocation.SUBJECT_DEFINING_ONTOLOGY);
+        }
+
+        XmlCatalogPreferences catalogPrefs = XmlCatalogPreferences.getPreferences();
+        if(useDefaultCatalog.isSelected()){
+            catalogPrefs.setXmlCatalogOptions(XmlCatalogPreferences.Choice.useDefaultCatalog);
+        }
+        else{
+            catalogPrefs.setXmlCatalogOptions(XmlCatalogPreferences.Choice.alwaysAskForCustomCatalog);
         }
 
         OWLTreePreferences prefs = OWLTreePreferences.getInstance();
@@ -163,6 +175,23 @@ public class GeneralPreferencesPanel extends OWLPreferencesPanel {
         else {
             searchManagerPluginComboBox.setEnabled(false);
         }
+
+        // XmlCatalog options
+        panel.addSeparator();
+
+        ButtonGroup xmlCatalogButtonGroup = new ButtonGroup();
+        useDefaultCatalog = new JRadioButton("use default XML Catalog",
+                XmlCatalogPreferences.getPreferences().getXmlCatalogOptions() == XmlCatalogPreferences.Choice.useDefaultCatalog);
+        alwaysAskForCustomCatalog = new JRadioButton("ask for a catalog",
+                XmlCatalogPreferences.getPreferences().getXmlCatalogOptions() == XmlCatalogPreferences.Choice.alwaysAskForCustomCatalog);
+        alwaysAskForCustomCatalog.setToolTipText("If no catalog is set, ask for one before loading an ontology");
+
+        xmlCatalogButtonGroup.add(useDefaultCatalog);
+        xmlCatalogButtonGroup.add(alwaysAskForCustomCatalog);
+
+        panel.addGroup("XML Catalog options");
+        panel.addGroupComponent(useDefaultCatalog);
+        panel.addGroupComponent(alwaysAskForCustomCatalog);
     }
 
     public void initialise() throws Exception {

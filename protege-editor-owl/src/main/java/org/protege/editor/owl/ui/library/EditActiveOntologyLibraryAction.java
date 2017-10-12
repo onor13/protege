@@ -31,7 +31,7 @@ public class EditActiveOntologyLibraryAction extends ProtegeOWLAction {
                 showCatalogNotPresentMessage();
                 return;
             }
-            File catalogFile = OntologyCatalogManager.getCatalogFile(activeCatalog);
+            File catalogFile = catalogManager.getCatalogFile(activeCatalog);
             if (!catalogFile.exists()) {
                 showCatalogNotPresentMessage();
                 return;

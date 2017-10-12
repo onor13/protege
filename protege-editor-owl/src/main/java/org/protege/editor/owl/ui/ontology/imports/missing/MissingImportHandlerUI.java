@@ -63,48 +63,25 @@ public class MissingImportHandlerUI implements MissingImportHandler {
             return null;
         }
         UIHelper helper = new UIHelper(owlEditorKit);
-        File file = helper.chooseOWLOrCatalogFile("Please select an ontology or a catalog file");
+        File file = helper.chooseOWLOrCatalogFile(ontologyIRI.getShortForm()+" not found, select an ontology or a catalog file");
         if (file == null) {
             return ontologyIRI;
         }
-        boolean isFileCatalog = true;
-        XMLCatalogManager xmlCatalogManager = null;
+        XMLCatalogManager xmlCatalogManager;
+        OntologyCatalogManager catalogManager = owlEditorKit.getOWLModelManager().getOntologyCatalogManager();
         try {
             XMLCatalog catalog = CatalogUtilities.parseDocument(file.toURI().toURL());
             xmlCatalogManager = new XMLCatalogManager(catalog);
         } catch (Exception e) {
             ;//Not a catalog, probably an ontology
-            isFileCatalog = false;
-            updateActiveCatalog(ontologyIRI, file, isFileCatalog);
+            catalogManager.updateActiveCatalog(ontologyIRI, file, false);
             return IRI.create(file);
         }
 
-        updateActiveCatalog(ontologyIRI, file, isFileCatalog);
+        catalogManager.updateActiveCatalog(ontologyIRI, file, true);
         xmlCatalogManager.getAllUriEntries().forEach(entry -> cache.put(entry.getOntologyIRI(), IRI.create(entry.getPhysicalLocation())));
         IRI result = cache.get(ontologyIRI);
         return result == null ? ontologyIRI : result;
-
-    }
-
-    private void updateActiveCatalog(IRI ontologyIRI, File file, boolean isFileCatalog) {
-        OntologyCatalogManager catalogManager = owlEditorKit.getOWLModelManager().getOntologyCatalogManager();
-        XMLCatalog activeCatalog = catalogManager.getActiveCatalog();
-        if (activeCatalog == null) {
-            return;
-        }
-        URI relativeFile = CatalogUtilities.relativize(file.toURI(), activeCatalog);
-        if (isFileCatalog) {
-            activeCatalog.addEntry(0, new NextCatalogEntry("User Entered Import Resolution", activeCatalog, relativeFile, null));
-        } else {
-            activeCatalog.addEntry(0, new UriEntry("User Entered Import Resolution", activeCatalog, ontologyIRI.toString(), relativeFile, null));
-        }
-
-        File catalogLocation = new File(activeCatalog.getXmlBaseContext().getXmlBase());
-        try {
-            CatalogUtilities.save(activeCatalog, catalogLocation);
-        } catch (IOException e) {
-            logger.error("Could not save user supplied import redirection to catalog.", e);
-        }
     }
 }
 

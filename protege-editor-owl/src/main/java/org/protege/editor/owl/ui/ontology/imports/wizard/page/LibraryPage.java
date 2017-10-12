@@ -71,7 +71,7 @@ public class LibraryPage extends OntologyImportPage {
     
     private void handleEditRepositories() {
     	OntologyCatalogManager catalogManager = getOWLModelManager().getOntologyCatalogManager();
-    	File activeCatalogFile = OntologyCatalogManager.getCatalogFile(catalogManager.getActiveCatalog());
+    	File activeCatalogFile = catalogManager.getCatalogFile(catalogManager.getActiveCatalog());
     	try {
 			OntologyLibraryPanel.showDialog(getOWLEditorKit(), activeCatalogFile);
 			calculatePossibleImports();

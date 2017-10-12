@@ -33,8 +33,7 @@ public class ChangeActiveOntologyLibraryAction extends ProtegeOWLAction {
                     Collections.singleton("xml"));
             if (catalogFile != null) {
                 OntologyCatalogManager catalogManager = getOWLModelManager().getOntologyCatalogManager();
-                catalogManager.changeActiveCatalog(catalogFile);
-                XMLCatalog activeCatalog = catalogManager.getActiveCatalog();
+                XMLCatalog activeCatalog = catalogManager.changeActiveCatalog(catalogFile);
                 GetImportsVisitor getter = new GetImportsVisitor();
                 for (Entry entry : activeCatalog.getEntries()) {
                     entry.accept(getter);
