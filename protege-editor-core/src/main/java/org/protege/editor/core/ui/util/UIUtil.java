@@ -66,6 +66,7 @@ public class UIUtil {
             return MacUIUtil.openFile((Window) parent, title, extensions);
         }
         JFileChooser fileDialog = new JFileChooser(getCurrentFileDirectory());
+        fileDialog.setDialogTitle(title);
         if (extensions != null && !extensions.isEmpty()) {
             fileDialog.setFileFilter(new FileFilter() {
 
